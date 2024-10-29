@@ -1,26 +1,29 @@
 <template>
   <div>
-    <label for="field">
-      <slot>Domyślna etykieta</slot>
-    </label>
-    <input
-      :type="inputType"
-      id="field"
-      v-model="inputValue"
-      @input="validateInput"
-      :class="{ 'input-error': hasError }"
-    />
-    <button @click="clearInput">Wyczyść</button>
-    <div v-if="hasError" id="error-info">
+    <div id="row">
+      <label for="field" id="label">
+        <slot>Domyślna etykieta</slot>
+      </label>
+      <div class="inputs" :class="{ 'input-error': hasAnyError }">
+        <input
+          :type="inputType"
+          class="field"
+          v-model="inputValue"
+          @input="validateInput"
+        />
+        <button id="button" @click="clearInput">Wyczyść</button>
+      </div>
+    </div>
+    <div v-if="hasError" class="error-info fade-out">
       <p class="error-message">
         Wprowadź co najmniej {{ minCharacters }}
-        <span v-if="minCharacters > 1">znaki</span>
-        <span v-else>znak</span>
+        <span v-if="minCharacters > 4">znaków</span>
+        <span v-else>znaki</span>
       </p>
     </div>
     <div
       v-if="inputType === 'number' && (hasMinError || hasMaxError)"
-      id="error-info"
+      class="error-info fade-out"
     >
       <p class="error-message" v-if="hasMinError">
         Wartość musi być większa lub równa {{ minValue }}.
@@ -75,16 +78,18 @@ export default defineComponent({
 
       if (props.inputType === "number") {
         const numericValue = parseFloat(inputValue.value);
-        if (props.minValue !== null && numericValue < props.minValue) {
-          emit(
-            "input-error",
-            `Wartość musi być większa lub równa ${props.minValue}.`
-          );
-        } else if (props.maxValue !== null && numericValue > props.maxValue) {
-          emit(
-            "input-error",
-            `Wartość musi być mniejsza lub równa ${props.maxValue}.`
-          );
+        if (!isNaN(numericValue)) {
+          if (props.minValue !== null && numericValue < props.minValue) {
+            emit(
+              "input-error",
+              `Wartość musi być większa lub równa ${props.minValue}.`
+            );
+          } else if (props.maxValue !== null && numericValue > props.maxValue) {
+            emit(
+              "input-error",
+              `Wartość musi być mniejsza lub równa ${props.maxValue}.`
+            );
+          }
         }
       }
     };
@@ -96,6 +101,7 @@ export default defineComponent({
 
     const hasError = computed(() => {
       return (
+        props.inputType === "text" &&
         inputValue.value.length > 0 &&
         inputValue.value.length < props.minCharacters
       );
@@ -103,17 +109,23 @@ export default defineComponent({
 
     const hasMinError = computed(() => {
       if (props.inputType === "number" && props.minValue !== null) {
-        return parseFloat(inputValue.value) < props.minValue;
+        const numericValue = parseFloat(inputValue.value);
+        return !isNaN(numericValue) && numericValue < props.minValue;
       }
       return false;
     });
 
     const hasMaxError = computed(() => {
       if (props.inputType === "number" && props.maxValue !== null) {
-        return parseFloat(inputValue.value) > props.maxValue;
+        const numericValue = parseFloat(inputValue.value);
+        return !isNaN(numericValue) && numericValue > props.maxValue;
       }
       return false;
     });
+
+    const hasAnyError = computed(
+      () => hasError.value || hasMinError.value || hasMaxError.value
+    );
 
     return {
       inputValue,
@@ -122,24 +134,86 @@ export default defineComponent({
       hasError,
       hasMinError,
       hasMaxError,
+      hasAnyError,
     };
   },
 });
 </script>
 
 <style scoped>
+@keyframes fade {
+  from {
+    opacity: 0;
+    max-height: 0px;
+  }
+  to {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+.fade-out {
+  animation: fade 2s forwards;
+}
+
+.inputs {
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease-in-out;
+}
 .input-error {
-  border: 2px solid red !important;
+  border: 2px solid rgba(255, 0, 0, 0.514) !important;
   outline: none;
 }
 .error-message {
-  color: red;
+  color: rgb(255, 0, 0);
   font-size: 14px;
   margin-top: 5px;
 }
-#error-info {
+.error-info {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+#row {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+#label {
+  font-size: 20px;
+  text-align: left;
+}
+
+.field {
+  font-size: 20px;
+  padding: 5px;
+  text-align: center;
+  border: transparent;
+  border-top-left-radius: 13px;
+  border-top-right-radius: 13px;
+  border-bottom: none;
+  outline: none;
+}
+
+#button {
+  font-size: 20px;
+  padding: 5px;
+  border-bottom-left-radius: 13px;
+  border-bottom-right-radius: 13px;
+  border: transparent;
+  border-top: none;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+#button:hover {
+  background-color: rgba(255, 0, 0, 0.514);
 }
 </style>

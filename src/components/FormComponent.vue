@@ -106,5 +106,15 @@ form {
 }
 button {
   margin-top: 20px;
+  border-radius: 15px;
+  border: none;
+  width: 100px;
+  padding: 15px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+button:hover {
+  background-color: rgba(0, 255, 0, 0.404);
 }
 </style>
