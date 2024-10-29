@@ -5,11 +5,13 @@
         <slot>Domyślna etykieta</slot>
       </label>
       <div class="inputs" :class="{ 'input-error': hasAnyError }">
+        <!-- v-bind :type-->
+        <!-- v-on @input= validateInput -->
         <input
           :type="inputType"
           class="field"
           v-model="inputValue"
-          @input="validateInput"
+          v-on:input="validateInput"
         />
         <button id="button" @click="clearInput">Wyczyść</button>
       </div>
